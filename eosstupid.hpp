@@ -32,19 +32,19 @@ class stupidofeos : public eosio::contract
     struct claim_record
     {
         claim_record(){};
-        claim_record(uint64_t kingdomKingIndex, time claimTime, account_name name,std::string memo, asset price)
-            : kingdomKingIndex(kingdomKingIndex), claimTime(claimTime), name(name), memo(memo), price(price){};
+        claim_record(uint64_t stupidIndex, time claimTime, account_name name,std::string memo, asset price)
+            : stupidIndex(stupidIndex), claimTime(claimTime), name(name), memo(memo), price(price){};
         // upper 56 bits contain kingdom order, lower 8 bits contain kingOrder
-        uint64_t kingdomKingIndex; // this also acts as key of the table
+        uint64_t stupidIndex; // this also acts as key of the table
         time claimTime;
         account_name name;
         std::string memo;
         asset price;
 
-        uint64_t primary_key() const { return kingdomKingIndex; }
+        uint64_t primary_key() const { return stupidIndex; }
         // need to serialize this, otherwise saving it in the data base does not work
         // Runtime Error Processing WASM
-        EOSLIB_SERIALIZE(claim_record, (kingdomKingIndex)(claimTime)(name)(memo)(price))
+        EOSLIB_SERIALIZE(claim_record, (stupidIndex)(claimTime)(name)(memo)(price))
     };
 
     //@abi table stupids i64
@@ -91,6 +91,6 @@ class stupidofeos : public eosio::contract
   private:
     claims_db claims;
     supid_db stupids;
-    void sendstupidreward(asset reward,uint64_t lastKingdomOrder);
+    void sendstupidreward(asset reward,uint64_t count);
     asset contractbalance();
 };

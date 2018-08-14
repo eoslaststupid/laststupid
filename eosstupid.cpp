@@ -10,19 +10,19 @@
 using namespace eosio;
 using namespace std;
 
-inline uint64_t makeIndex(uint64_t kingdomOrder, uint8_t kingOrder)
+inline uint64_t makeIndex(uint64_t stupidTurnOrder, uint8_t stupidOrder)
 {
-    return (kingdomOrder << 8) | kingOrder;
+    return (stupidTurnOrder << 8) | stupidOrder;
 }
 
-inline uint64_t indexToKingdomOrder(uint64_t kingdomKingIndex)
+inline uint64_t indexToStupidTurnOrder(uint64_t stupidOrder)
 {
-    return kingdomKingIndex >> 8;
+    return stupidOrder >> 8;
 }
 
-inline uint8_t indexToKingOrder(uint64_t kingdomKingIndex)
+inline uint8_t indexToStupidOrder(uint64_t stupidOrder)
 {
-    return kingdomKingIndex & 0xFF;
+    return stupidOrder & 0xFF;
 }
 
 asset stupidofeos::contractbalance()
@@ -51,23 +51,6 @@ void stupidofeos::sendstupidreward(asset reward,uint64_t count){
     }
 }
 
-inline void splitMemo(std::vector<std::string> &results, std::string memo)
-{
-    auto end = memo.cend();
-    auto start = memo.cbegin();
-
-    for (auto it = memo.cbegin(); it != end; ++it)
-    {
-        if (*it == ';')
-        {
-            results.emplace_back(start, it);
-            start = it + 1;
-        }
-    }
-    if (start != end)
-        results.emplace_back(start, end);
-}
-
 void stupidofeos::onTransfer(const currency::transfer &transfer)
 {
     if (transfer.to != _self)
@@ -82,8 +65,8 @@ void stupidofeos::onTransfer(const currency::transfer &transfer)
     eosio_assert(itr != claims.end(), "no previous claim exists");
     claim_record latestClaimRecord = *itr;
 
-    uint64_t lastKingdomOrder = indexToKingdomOrder(latestClaimRecord.kingdomKingIndex);
-    uint8_t lastKingOrder = indexToKingOrder(latestClaimRecord.kingdomKingIndex);
+    uint64_t lastStupidTurnOrder = indexToStupidTurnOrder(latestClaimRecord.stupidIndex);
+    uint8_t lastStupidOrder = indexToStupidOrder(latestClaimRecord.stupidIndex);
 
     eosio_assert(transfer.quantity.amount >= latestClaimRecord.price.amount * CLAIM_LEAST_MULtIPLIER, "claim price is too low");
     eosio_assert(transfer.quantity.amount <= latestClaimRecord.price.amount * CLAIM_MOST_MULtIPLIER, "claim price is too high");
@@ -91,15 +74,15 @@ void stupidofeos::onTransfer(const currency::transfer &transfer)
     std::vector<std::string> results;
 
     claims.emplace(_self, [&](claim_record &claimRecord) {
-        uint64_t kingdomKingIndex = makeIndex(lastKingdomOrder, lastKingOrder + 1);
-        claimRecord.kingdomKingIndex = kingdomKingIndex;
+        uint64_t stupidIndex = makeIndex(lastStupidTurnOrder, lastStupidOrder + 1);
+        claimRecord.stupidIndex = stupidIndex;
         claimRecord.claimTime = now();
         claimRecord.name = transfer.from;
         claimRecord.memo = transfer.memo;
         claimRecord.price = transfer.quantity;
     });
 
-    // first king is always deployed contract itself => cannot send transfer from itself to itself
+    // first stupid is always deployed contract itself => cannot send transfer from itself to itself
     if (latestClaimRecord.name != _self)
     {
         asset amount = asset{(int64_t)(transfer.quantity.amount-(transfer.quantity.amount * COMMISSION_PERCENTAGE_POINTS)), CORE_SYMBOL};
@@ -108,7 +91,7 @@ void stupidofeos::onTransfer(const currency::transfer &transfer)
             N(eosio.token),
             N(transfer),
             currency::transfer{
-                .from = _self, .to = latestClaimRecord.name, .quantity = amount, .memo = "You were dethroned! Here's your profit. - King of EOS"}}
+                .from = _self, .to = latestClaimRecord.name, .quantity = amount, .memo = "You were fail to become the Stupid of EOS"}}
             .send();
         asset teamamount = asset{(int64_t)(transfer.quantity.amount * TEAM_PERCENTAGE_POINTS), CORE_SYMBOL};
         action{
@@ -118,8 +101,6 @@ void stupidofeos::onTransfer(const currency::transfer &transfer)
             currency::transfer{
                 .from = _self, .to = TEAM_NAME, .quantity = teamamount, .memo = "TEAM LUCK"}}
             .send();
-                    print("here is running now three");
-
     }
 }
 
@@ -133,10 +114,10 @@ void stupidofeos::end()
     time lastClaimTime = itr->claimTime;
     eosio_assert(now() > lastClaimTime + MAX_CORONATION_TIME, "max coronation time not reached yet");
 
-    uint64_t lastKingdomOrder = indexToKingdomOrder(itr->kingdomKingIndex);
+    uint64_t lastStupidTurnOrder = indexToStupidTurnOrder(itr->stupidIndex);
     asset contractamount = contractbalance();
 
-    sendstupidreward(asset{(int64_t)(contractamount.amount*STUPID_ROYALTY),CORE_SYMBOL}, lastKingdomOrder);
+    sendstupidreward(asset{(int64_t)(contractamount.amount*STUPID_ROYALTY),CORE_SYMBOL}, lastStupidTurnOrder);
         
     stupids.emplace(_self, [&](stupid &stupid) {
         stupid.id = stupids.available_primary_key();
@@ -144,8 +125,8 @@ void stupidofeos::end()
     });
 
     claims.emplace(_self, [&](claim_record &claimRecord) {
-        uint64_t kingdomKingIndex = makeIndex(lastKingdomOrder + 1, 0);
-        claimRecord.kingdomKingIndex = kingdomKingIndex;
+        uint64_t stupidIndex = makeIndex(lastStupidTurnOrder + 1, 0);
+        claimRecord.stupidIndex = stupidIndex;
         claimRecord.claimTime = now();
         claimRecord.name = _self;
         claimRecord.price = asset{10000,CORE_SYMBOL};
@@ -158,7 +139,7 @@ void stupidofeos::init()
     // make sure table claims is empty
     eosio_assert(claims.begin() == claims.end(), "already initialized");
     claims.emplace(_self, [&](claim_record &claimRecord) {
-        claimRecord.kingdomKingIndex = makeIndex(0, 0);
+        claimRecord.stupidIndex = makeIndex(0, 0);
         claimRecord.claimTime = now();
         claimRecord.name = _self;
         claimRecord.price = asset{10000, CORE_SYMBOL};
@@ -191,8 +172,8 @@ void stupidofeos::apply(account_name contract, account_name act)
 extern "C"
 {
     [[noreturn]] void apply(uint64_t receiver, uint64_t code, uint64_t action) {
-        stupidofeos king(receiver);
-        king.apply(code, action);
+        stupidofeos stupid(receiver);
+        stupid.apply(code, action);
         eosio_exit(0);
     }
 }
