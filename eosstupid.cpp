@@ -73,7 +73,7 @@ void stupidofeos::onTransfer(const currency::transfer &transfer)
     if (transfer.to != _self)
         return;
 
-    eosio_assert(transfer.from != _self, "deployed contract may not take part in claiming the throne");
+    eosio_assert(transfer.from != _self, "deployed contract may not take part in claiming the stupid");
 
     // print("Transfer memo: ", transfer.memo.c_str());
     eosio_assert(transfer.quantity.symbol == CORE_SYMBOL, "must pay with EOS token");
@@ -85,8 +85,8 @@ void stupidofeos::onTransfer(const currency::transfer &transfer)
     uint64_t lastKingdomOrder = indexToKingdomOrder(latestClaimRecord.kingdomKingIndex);
     uint8_t lastKingOrder = indexToKingOrder(latestClaimRecord.kingdomKingIndex);
 
-    eosio_assert(transfer.quantity.amount >= latestClaimRecord.price.amount * CLAIM_LEAST_MULtIPLIER, "wrong claim price ");
-    eosio_assert(transfer.quantity.amount <= latestClaimRecord.price.amount * CLAIM_MOST_MULtIPLIER, "wrong claim price ");
+    eosio_assert(transfer.quantity.amount >= latestClaimRecord.price.amount * CLAIM_LEAST_MULtIPLIER, "claim price is too low");
+    eosio_assert(transfer.quantity.amount <= latestClaimRecord.price.amount * CLAIM_MOST_MULtIPLIER, "claim price is too high");
 
     std::vector<std::string> results;
 
