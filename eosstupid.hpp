@@ -14,7 +14,7 @@
 #define STUPID_PERCENTAGE_POINTS ((double)(0.03))
 #define TEAM_PERCENTAGE_POINTS ((double)(0.02))
 #define STUPID_ROYALTY ((double)(0.7))
-#define TEAM_NAME N(eosiostupid)
+#define TEAM_NAME N(eosiostupid5)
 
 using eosio::asset;
 
