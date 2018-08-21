@@ -39,7 +39,7 @@ inline void sendreward(account_name from,account_name to, asset reward){
     transfers.send();
 }
 
-void stupidofeos::sendstupidreward(asset reward,uint64_t count){
+void stupidofeos::sendstupidreward(const asset reward,uint64_t count){
     if(count>0){
         auto stupid_itr = stupids.begin();
         eosio_assert(stupid_itr != stupids.end(),"data wrong!");
@@ -111,21 +111,20 @@ void stupidofeos::end()
     --itr; // itr now points to last element
     eosio_assert(itr != claims.end(), "no previous claim exists");
 
-    // time lastClaimTime = itr->claimTime;
-    // eosio_assert(now() > lastClaimTime + MAX_CORONATION_TIME, "max coronation time not reached yet");
+    time lastClaimTime = itr->claimTime;
+    eosio_assert(now() > lastClaimTime + MAX_CORONATION_TIME, "max coronation time not reached yet");
 
     uint64_t lastStupidTurnOrder = indexToStupidTurnOrder(itr->stupidIndex);
     asset contractamount = contractbalance();
-    asset bonus = asset{(int64_t)(contractamount.amount*STUPID_ROYALTY),CORE_SYMBOL};
-     stupids.emplace(_self, [&](stupid &stupid) {
+
+    sendstupidreward(asset{(int64_t)(contractamount.amount*STUPID_ROYALTY),CORE_SYMBOL}, lastStupidTurnOrder);
+    
+    stupids.emplace(_self, [&](stupid &stupid) {
         stupid.id = stupids.available_primary_key();
         stupid.name = itr->name;
         stupid.claim = itr->price;
-        stupid.bonus = bonus;
-    });
-
-    sendstupidreward(bonus, lastStupidTurnOrder);
-        
+        stupid.bonus = asset{(int64_t)(contractamount.amount*STUPID_ROYALTY),CORE_SYMBOL};
+    }); 
    
     claims.emplace(_self, [&](claim_record &claimRecord) {
         uint64_t stupidIndex = makeIndex(lastStupidTurnOrder + 1, 0);
