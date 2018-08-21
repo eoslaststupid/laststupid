@@ -53,11 +53,13 @@ class stupidofeos : public eosio::contract
         
         uint64_t id; 
         account_name name;
+        asset claim;
+        asset bonus;
 
         uint64_t primary_key() const { return id; }
         // need to serialize this, otherwise saving it in the data base does not work
         // Runtime Error Processing WASM
-        EOSLIB_SERIALIZE(stupid, (id)(name))
+        EOSLIB_SERIALIZE(stupid, (id)(name)(claim)(bonus))
     };
 
     //@abi action init

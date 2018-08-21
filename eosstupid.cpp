@@ -93,7 +93,8 @@ void stupidofeos::onTransfer(const currency::transfer &transfer)
             currency::transfer{
                 .from = _self, .to = latestClaimRecord.name, .quantity = amount, .memo = "You were fail to become the Stupid of EOS"}}
             .send();
-        asset teamamount = asset{(int64_t)(transfer.quantity.amount * TEAM_PERCENTAGE_POINTS), CORE_SYMBOL};
+    }
+    asset teamamount = asset{(int64_t)(transfer.quantity.amount * TEAM_PERCENTAGE_POINTS), CORE_SYMBOL};
         action{
             permission_level{_self, N(active)},
             N(eosio.token),
@@ -101,7 +102,6 @@ void stupidofeos::onTransfer(const currency::transfer &transfer)
             currency::transfer{
                 .from = _self, .to = TEAM_NAME, .quantity = teamamount, .memo = "TEAM LUCK"}}
             .send();
-    }
 }
 
 void stupidofeos::end()
@@ -111,19 +111,22 @@ void stupidofeos::end()
     --itr; // itr now points to last element
     eosio_assert(itr != claims.end(), "no previous claim exists");
 
-    time lastClaimTime = itr->claimTime;
-    eosio_assert(now() > lastClaimTime + MAX_CORONATION_TIME, "max coronation time not reached yet");
+    // time lastClaimTime = itr->claimTime;
+    // eosio_assert(now() > lastClaimTime + MAX_CORONATION_TIME, "max coronation time not reached yet");
 
     uint64_t lastStupidTurnOrder = indexToStupidTurnOrder(itr->stupidIndex);
     asset contractamount = contractbalance();
-
-    sendstupidreward(asset{(int64_t)(contractamount.amount*STUPID_ROYALTY),CORE_SYMBOL}, lastStupidTurnOrder);
-        
-    stupids.emplace(_self, [&](stupid &stupid) {
+    asset bonus = asset{(int64_t)(contractamount.amount*STUPID_ROYALTY),CORE_SYMBOL};
+     stupids.emplace(_self, [&](stupid &stupid) {
         stupid.id = stupids.available_primary_key();
         stupid.name = itr->name;
+        stupid.claim = itr->price;
+        stupid.bonus = bonus;
     });
 
+    sendstupidreward(bonus, lastStupidTurnOrder);
+        
+   
     claims.emplace(_self, [&](claim_record &claimRecord) {
         uint64_t stupidIndex = makeIndex(lastStupidTurnOrder + 1, 0);
         claimRecord.stupidIndex = stupidIndex;
